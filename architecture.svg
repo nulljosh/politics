@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" width="600" height="300">
+  <rect width="600" height="300" fill="#fff"/>
+  <rect x="40" y="40" width="120" height="50" rx="8" fill="none" stroke="#333" stroke-width="1.5"/>
+  <text x="100" y="70" style="font-family:-apple-system,system-ui,sans-serif;font-size:13px;fill:#333;text-anchor:middle">Landing</text>
+  <rect x="240" y="40" width="120" height="50" rx="8" fill="none" stroke="#333" stroke-width="1.5"/>
+  <text x="300" y="70" style="font-family:-apple-system,system-ui,sans-serif;font-size:13px;fill:#333;text-anchor:middle">Quiz (6 pages)</text>
+  <rect x="440" y="40" width="120" height="50" rx="8" fill="none" stroke="#333" stroke-width="1.5"/>
+  <text x="500" y="70" style="font-family:-apple-system,system-ui,sans-serif;font-size:13px;fill:#333;text-anchor:middle">Results</text>
+  <line x1="160" y1="65" x2="240" y2="65" stroke="#333" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="360" y1="65" x2="440" y2="65" stroke="#333" stroke-width="1" marker-end="url(#arrow)"/>
+  <rect x="220" y="140" width="160" height="40" rx="6" fill="none" stroke="#999" stroke-width="1"/>
+  <text x="300" y="165" style="font-family:-apple-system,system-ui,sans-serif;font-size:11px;fill:#666;text-anchor:middle">localStorage (ans, pg)</text>
+  <line x1="300" y1="90" x2="300" y2="140" stroke="#999" stroke-width="1" stroke-dasharray="4,3"/>
+  <rect x="220" y="210" width="160" height="40" rx="6" fill="none" stroke="#999" stroke-width="1"/>
+  <text x="300" y="228" style="font-family:-apple-system,system-ui,sans-serif;font-size:11px;fill:#666;text-anchor:middle">Scoring: S[] matrix</text>
+  <text x="300" y="242" style="font-family:-apple-system,system-ui,sans-serif;font-size:10px;fill:#999;text-anchor:middle">econ + social axes</text>
+  <line x1="300" y1="180" x2="300" y2="210" stroke="#999" stroke-width="1" stroke-dasharray="4,3"/>
+  <rect x="440" y="140" width="120" height="40" rx="6" fill="none" stroke="#999" stroke-width="1"/>
+  <text x="500" y="165" style="font-family:-apple-system,system-ui,sans-serif;font-size:11px;fill:#666;text-anchor:middle">SVG Compass</text>
+  <line x1="500" y1="90" x2="500" y2="140" stroke="#999" stroke-width="1" stroke-dasharray="4,3"/>
+  <rect x="440" y="210" width="120" height="40" rx="6" fill="none" stroke="#999" stroke-width="1"/>
+  <text x="500" y="235" style="font-family:-apple-system,system-ui,sans-serif;font-size:11px;fill:#666;text-anchor:middle">Canvas PNG</text>
+  <line x1="500" y1="180" x2="500" y2="210" stroke="#999" stroke-width="1" stroke-dasharray="4,3"/>
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#333"/></marker></defs>
+</svg>

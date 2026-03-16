@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Political Compass</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='none' stroke='%23e8e8e8' stroke-width='3'/><line x1='50' y1='10' x2='50' y2='90' stroke='%23e8e8e8' stroke-width='2'/><line x1='10' y1='50' x2='90' y2='50' stroke='%23e8e8e8' stroke-width='2'/><polygon points='50,8 46,18 54,18' fill='%23e8e8e8'/></svg>">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -96,7 +97,7 @@ margin-bottom:1rem;transition:color 0.3s ease;
 }
 .answers{display:flex;gap:0;border:1px solid var(--border);border-radius:2px;overflow:hidden}
 .a-btn{
-flex:1;padding:0.625rem 0.25rem;background:none;border:none;
+flex:1;padding:0.625rem 0.25rem;min-height:44px;background:none;border:none;
 border-right:1px solid var(--border);
 color:var(--tertiary);font-family:inherit;font-size:0.6875rem;
 font-weight:500;letter-spacing:0.04em;cursor:pointer;
@@ -104,6 +105,7 @@ transition:all 0.2s ease;text-align:center;
 }
 .a-btn:last-child{border-right:none}
 .a-btn:hover{color:var(--text);background:rgba(255,255,255,0.03)}
+.a-btn:focus-visible{outline:2px solid var(--text);outline-offset:-2px}
 .a-btn.sel{color:var(--bg);background:var(--text)}
 
 /* Nav */
@@ -158,10 +160,9 @@ padding-top:1.5rem;margin-bottom:2rem;
 
 /* Responsive */
 @media(max-width:480px){
-.answers{flex-wrap:wrap}
-.a-btn{flex:1 1 48%;border-bottom:1px solid var(--border)}
-.a-btn:nth-child(2){border-right:none}
-.a-btn:nth-child(3),.a-btn:nth-child(4){border-bottom:none}
+.answers{flex-direction:column}
+.a-btn{flex:none;width:100%;min-height:48px;border-right:none;border-bottom:1px solid var(--border)}
+.a-btn:last-child{border-bottom:none}
 .coords{flex-direction:column;align-items:center}
 .meta-row{flex-direction:column;gap:0.5rem}
 }
@@ -173,7 +174,7 @@ padding-top:1.5rem;margin-bottom:2rem;
 </head>
 <body>
 
-<div class="progress" id="progress" style="display:none">
+<div class="progress" id="progress" style="display:none" role="progressbar" aria-valuemin="0" aria-valuemax="62" aria-valuenow="0" aria-label="Quiz progress">
 <div class="progress-fill" id="progressFill"></div>
 </div>
 
@@ -212,7 +213,7 @@ padding-top:1.5rem;margin-bottom:2rem;
 <div class="q-list" id="qList"></div>
 <div class="quiz-nav">
 <button class="nav-btn" id="backBtn" onclick="back()">Back</button>
-<span class="quiz-counter" id="counter"></span>
+<span class="quiz-counter" id="counter" aria-live="polite"></span>
 <button class="nav-btn primary" id="fwdBtn" onclick="forward()">Next</button>
 </div>
 </div>
@@ -240,6 +241,7 @@ padding-top:1.5rem;margin-bottom:2rem;
 <div class="result-btns">
 <button class="nav-btn primary" onclick="retake()">Retake</button>
 <button class="nav-btn" onclick="copy()">Copy result</button>
+<button class="nav-btn" onclick="shareImage()">Download image</button>
 </div>
 </div>
 </div>
@@ -337,6 +339,15 @@ const VALS=[-2,-1,1,2];
 let ans=new Array(62).fill(null);
 let pg=0;
 
+// Restore state from localStorage
+try{
+const sa=localStorage.getItem('pc_ans');
+const sp=localStorage.getItem('pc_pg');
+if(sa){const parsed=JSON.parse(sa);if(Array.isArray(parsed)&&parsed.length===62)ans=parsed}
+if(sp)pg=parseInt(sp)||0;
+}catch(e){}
+function save(){try{localStorage.setItem('pc_ans',JSON.stringify(ans));localStorage.setItem('pc_pg',String(pg))}catch(e){}}
+
 function gi(page,local){let i=0;for(let p=0;p<page;p++)i+=P[p].q.length;return i+local}
 function answered(){return ans.filter(a=>a!==null).length}
 
@@ -354,8 +365,8 @@ setTimeout(()=>f.classList.add('in'),d+50);
 });
 }
 
-function start(){pg=0;render();show('quiz')}
-function retake(){ans.fill(null);pg=0;show('landing')}
+function start(){if(!ans.some(a=>a!==null))pg=0;render();show('quiz');save()}
+function retake(){ans.fill(null);pg=0;save();show('landing')}
 
 function render(){
 const page=P[pg];
@@ -375,8 +386,8 @@ div.className='q-item'+(ans[g]!==null?' answered':'');
 div.innerHTML=`
 <div class="q-num">Proposition ${g+1}</div>
 <div class="q-text">${q}</div>
-<div class="answers">${LABELS.map((l,j)=>
-`<button class="a-btn${ans[g]===VALS[j]?' sel':''}" onclick="pick(${g},${VALS[j]},this)">${l}</button>`
+<div class="answers" role="radiogroup" aria-label="Proposition ${g+1}">${LABELS.map((l,j)=>
+`<button class="a-btn${ans[g]===VALS[j]?' sel':''}" role="radio" aria-checked="${ans[g]===VALS[j]}" onclick="pick(${g},${VALS[j]},this)">${l}</button>`
 ).join('')}</div>`;
 list.appendChild(div);
 });
@@ -386,14 +397,18 @@ function pick(g,val,el){
 ans[g]=val;
 const item=el.closest('.q-item');
 item.classList.add('answered');
-item.querySelectorAll('.a-btn').forEach(b=>b.classList.remove('sel'));
+item.querySelectorAll('.a-btn').forEach(b=>{b.classList.remove('sel');b.setAttribute('aria-checked','false')});
 el.classList.add('sel');
-document.getElementById('counter').textContent=`${answered()} of 62`;
-document.getElementById('progressFill').style.width=((answered()/62)*100)+'%';
+el.setAttribute('aria-checked','true');
+const a=answered();
+document.getElementById('counter').textContent=`${a} of 62`;
+document.getElementById('progressFill').style.width=((a/62)*100)+'%';
+document.getElementById('progress').setAttribute('aria-valuenow',String(a));
+save();
 }
 
-function back(){if(pg>0){pg--;render();show('quiz')}}
-function forward(){if(pg<5){pg++;render();show('quiz')}else calc()}
+function back(){if(pg>0){pg--;save();render();show('quiz')}}
+function forward(){if(pg<5){pg++;save();render();show('quiz')}else calc()}
 
 function calc(){
 let et=0,ec=0,st=0,sc=0;
@@ -402,9 +417,12 @@ const v=ans[i]||0;
 const[a,d]=S[i];
 if(a==='e'){et+=v*d;ec++}else{st+=v*d;sc++}
 }
+// Normalize each axis independently by its own question count (ec, sc)
+// so neither axis is weighted more heavily due to having more questions
 const e=ec?(et/(ec*2))*10:0;
 const s=sc?(st/(sc*2))*10:0;
 drawCompass(e,s);
+try{localStorage.removeItem('pc_ans');localStorage.removeItem('pc_pg')}catch(e){}
 show('results');
 }
 
@@ -471,6 +489,37 @@ const b=document.querySelector('.result-btns .nav-btn:last-child');
 b.textContent='Copied';setTimeout(()=>b.textContent='Copy result',1500);
 });
 }
+
+function shareImage(){
+const svg=document.getElementById('compass');
+const svgData=new XMLSerializer().serializeToString(svg);
+const canvas=document.createElement('canvas');
+canvas.width=880;canvas.height=960;
+const ctx=canvas.getContext('2d');
+ctx.fillStyle='#111';ctx.fillRect(0,0,880,960);
+const img=new Image();
+img.onload=function(){
+ctx.drawImage(img,0,40,880,880);
+ctx.fillStyle='#e8e8e8';ctx.font='200 32px -apple-system,system-ui,sans-serif';
+ctx.textAlign='center';
+const coordText=document.getElementById('coords').innerText;
+ctx.fillStyle='rgba(255,255,255,0.5)';ctx.font='13px -apple-system,system-ui,sans-serif';
+ctx.fillText(coordText,440,940);
+const q=document.querySelector('#quadInfo h2').innerText;
+ctx.fillStyle='#e8e8e8';ctx.font='200 24px -apple-system,system-ui,sans-serif';
+ctx.fillText(q,440,920);
+canvas.toBlob(function(blob){
+const url=URL.createObjectURL(blob);
+const a=document.createElement('a');
+a.href=url;a.download='political-compass.png';
+a.click();URL.revokeObjectURL(url);
+},'image/png');
+};
+img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgData);
+}
+
+// Auto-resume if user has saved progress
+if(ans.some(a=>a!==null)){render();show('quiz')}
 
 requestAnimationFrame(()=>{
 document.querySelectorAll('#landing .fade').forEach(f=>{
